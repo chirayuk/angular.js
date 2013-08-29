@@ -177,7 +177,8 @@ var ngIncludeDirective = ['$http', '$templateCache', '$anchorScroll', '$compile'
           }
         };
 
-        scope.$watch($sce.parseAsResourceUrl(srcExp), function ngIncludeWatchAction(src) {
+        scope.$watch(srcExp, function ngIncludeWatchAction(srcUntrusted) {
+          var src = $sce.getTrustedResourceUrl(srcUntrusted);
           var thisChangeId = ++changeCounter;
 
           if (src) {

@@ -71,8 +71,21 @@ function $RootScopeProvider(){
     return TTL;
   };
 
-  this.$get = ['$injector', '$exceptionHandler', '$parse', '$browser',
-      function( $injector,   $exceptionHandler,   $parse,   $browser) {
+  this.$get = ['$injector', '$exceptionHandler', '$parse', '$browser', '$sce',
+      function( $injector,   $exceptionHandler,   $parse,   $browser,   $sce) {
+
+    function sceAwareCompare(a, b, compareValue) {
+      if (a === b) {
+        return true;
+      }
+      var rawA = $sce.valueOf(a),
+          rawB = $sce.valueOf(b);
+      return !((a === rawA) ^ (b === rawB)) && (
+             (rawA === rawB) || (compareValue
+                            ? equals(rawA, rawB)
+                            : (typeof rawA == 'number' && typeof rawB == 'number' &&
+                               isNaN(rawA) && isNaN(rawB))));
+    }
 
     /**
      * @ngdoc function
@@ -375,6 +388,9 @@ function $RootScopeProvider(){
           newValue = objGetter(self);
           var newLength, key;
 
+          // ckck: with my change, a NaN in a collection compares equal to another NaN
+          // ckck: add test for that.
+          // ckck: isObject(rawValue)
           if (!isObject(newValue)) {
             if (oldValue !== newValue) {
               oldValue = newValue;
@@ -397,7 +413,7 @@ function $RootScopeProvider(){
             }
             // copy the items to oldValue and look for changes.
             for (var i = 0; i < newLength; i++) {
-              if (oldValue[i] !== newValue[i]) {
+              if (!sceAwareCompare(oldValue[i], newValue[i])) {
                 changeDetected++;
                 oldValue[i] = newValue[i];
               }
@@ -415,7 +431,7 @@ function $RootScopeProvider(){
               if (newValue.hasOwnProperty(key)) {
                 newLength++;
                 if (oldValue.hasOwnProperty(key)) {
-                  if (oldValue[key] !== newValue[key]) {
+                  if (!sceAwareCompare(oldValue[key], newValue[key])) {
                     changeDetected++;
                     oldValue[key] = newValue[key];
                   }
@@ -529,14 +545,12 @@ function $RootScopeProvider(){
                   watch = watchers[length];
                   // Most common watches are on primitives, in which case we can short
                   // circuit it with === operator, only when === fails do we use .equals
-                  if (watch && (value = watch.get(current)) !== (last = watch.last) &&
-                      !(watch.eq
-                          ? equals(value, last)
-                          : (typeof value == 'number' && typeof last == 'number'
-                             && isNaN(value) && isNaN(last)))) {
+                  if (watch && !sceAwareCompare(value = watch.get(current), last = watch.last, watch.eq)) {
                     dirty = true;
+                    // ckck
                     watch.last = watch.eq ? copy(value) : value;
-                    watch.fn(value, ((last === initWatchVal) ? value : last), current);
+                    // ckck - should use raw values in === ?
+                    watch.fn(value, sceAwareCompare(last, initWatchVal) ? value : last, current);
                     if (ttl < 5) {
                       logIdx = 4 - ttl;
                       if (!watchLog[logIdx]) watchLog[logIdx] = [];

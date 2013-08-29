@@ -463,6 +463,21 @@ describe('Scope', function() {
         });
 
 
+        it('CKCK: SCE: should not trigger change when object in collection changes', inject(function($sce) {
+          $rootScope.obj = [$sce.trustAsHtml('ckck')];
+          $rootScope.$digest();
+          expect(log).toEqual(['[{}]']);
+
+          $rootScope.obj[0] = $sce.trustAsHtml('ckck');
+          $rootScope.$digest();
+          expect(log).toEqual(['[{}]']);
+
+          $rootScope.obj[0] = $sce.trustAsHtml('ckck2');
+          $rootScope.$digest();
+          expect(log).toEqual(['[{}]', '[{}]']);
+        }));
+
+
         it('should watch array properties', function() {
           $rootScope.obj = [];
           $rootScope.$digest();

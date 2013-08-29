@@ -107,11 +107,13 @@ describe('ngBind*', function() {
         // If the binding is a function that creates a new value on every call via trustAs, we'll
         // trigger an infinite digest if we don't take care of it.
         element = $compile('<div ng-bind-html="getHtml()"></div>')($rootScope);
-        $rootScope.getHtml = function() {
-          return $sce.trustAsHtml('<div onclick="">hello</div>');
-        };
+        var html = '<div onclick="">hello</div>';
+        $rootScope.getHtml = function() { return $sce.trustAsHtml(html); };
         $rootScope.$digest();
         expect(angular.lowercase(element.html())).toEqual('<div onclick="">hello</div>');
+        var html = '<div onclick="">hello2</div>';
+        $rootScope.$digest();
+        expect(angular.lowercase(element.html())).toEqual('<div onclick="">hello2</div>');
       }));
 
       describe('when $sanitize is available', function() {
