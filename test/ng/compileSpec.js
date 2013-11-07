@@ -2187,6 +2187,30 @@ describe('$compile', function() {
     });
 
 
+    iit('CKCK: should give the isolate scope to directives in the template', function() {
+      module(function() {
+        directive('ckckDirective', function() {
+          return {
+            replace: true,
+            restrict: 'E',
+            scope: {},
+            template: '<input type="checkbox" ng-model="model">'
+          };
+        });
+      });
+
+      inject(function($rootScope) {
+        compile('<div><ckck-directive></ckck-directive></div>');
+
+        element = element.children().eq(0);
+        expect(element[0].checked).toBe(false);
+        element.scope().model = true;
+        $rootScope.$digest();
+        expect(element[0].checked).toBe(true);
+      });
+    });
+
+
     describe('attribute', function() {
       it('should copy simple attribute', inject(function() {
         compile('<div><span my-component attr="some text">');
