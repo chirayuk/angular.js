@@ -36,10 +36,19 @@ function ensureSafeMemberName(name, fullExpression) {
     throw $parseMinErr('isecfld',
         'Referencing "constructor" field in Angular expressions is disallowed! Expression: {0}',
         fullExpression);
+  } else if (name === "__defineGetter__" || name === "__defineSetter__"
+      || name === "__lookupGetter__" || name === "__lookupSetter__") {
+    throw $parseMinErr('isecgetset',
+        'Defining and looking up getters and setters in Angular expressions is disallowed! '
+        +'Expression: {0}', fullExpression);
   }
   return name;
 }
 
+var saved_defineGetter = {}.__defineGetter__,
+    saved_defineSetter = {}.__defineSetter__,
+    saved_lookupGetter = {}.__lookupGetter__,
+    saved_lookupSetter = {}.__lookupSetter__;
 function ensureSafeObject(obj, fullExpression) {
   // nifty check if obj is Function that is fast and works across iframes and other contexts
   if (obj) {
@@ -62,6 +71,11 @@ function ensureSafeObject(obj, fullExpression) {
       throw $parseMinErr('isecobj',
           'Referencing Object in Angular expressions is disallowed! Expression: {0}',
           fullExpression);
+    } else if (obj === saved_defineGetter || obj === saved_defineSetter
+        || obj === saved_lookupGetter || obj === saved_lookupSetter) {
+      throw $parseMinErr('isecgetset',
+          'Defining and looking up getters and setters in Angular expressions is disallowed! '
+          +'Expression: {0}', fullExpression);
     }
   }
   return obj;
