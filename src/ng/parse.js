@@ -36,22 +36,22 @@ function ensureSafeMemberName(name, fullExpression) {
     throw $parseMinErr('isecfld',
         'Referencing "constructor" field in Angular expressions is disallowed! Expression: {0}',
         fullExpression);
-  } else if (name === "__defineGetter__" || name === "__defineSetter__"
-      || name === "__lookupGetter__" || name === "__lookupSetter__") {
+  } else if (name === "__defineGetter__" || name === "__defineSetter__" ||
+             name === "__lookupGetter__" || name === "__lookupSetter__") {
     throw $parseMinErr('isecgetset',
-        'Defining and looking up getters and setters in Angular expressions is disallowed! '
-        +'Expression: {0}', fullExpression);
+        'Defining and looking up getters and setters in Angular expressions is disallowed! ' +
+        'Expression: {0}', fullExpression);
   } else if (name === "__proto__") {
-    throw $parseMinErr('isecproto', 'Using __proto__ in Angular expressions is disallowed! '
-        +'Expression: {0}', fullExpression);
+    throw $parseMinErr('isecproto', 'Using __proto__ in Angular expressions is disallowed! ' +
+        'Expression: {0}', fullExpression);
   }
   return name;
 }
 
-var saved_defineGetter = {}.__defineGetter__,
-    saved_defineSetter = {}.__defineSetter__,
-    saved_lookupGetter = {}.__lookupGetter__,
-    saved_lookupSetter = {}.__lookupSetter__;
+var __defineGetter__ = {}.__defineGetter__,
+    __defineSetter__ = {}.__defineSetter__,
+    __lookupGetter__ = {}.__lookupGetter__,
+    __lookupSetter__ = {}.__lookupSetter__;
 function ensureSafeObject(obj, fullExpression) {
   // nifty check if obj is Function that is fast and works across iframes and other contexts
   if (obj) {
@@ -74,11 +74,11 @@ function ensureSafeObject(obj, fullExpression) {
       throw $parseMinErr('isecobj',
           'Referencing Object in Angular expressions is disallowed! Expression: {0}',
           fullExpression);
-    } else if (obj === saved_defineGetter || obj === saved_defineSetter
-        || obj === saved_lookupGetter || obj === saved_lookupSetter) {
+    } else if (obj === __defineGetter__ || obj === __defineSetter__ ||
+               obj === __lookupGetter__ || obj === __lookupSetter__) {
       throw $parseMinErr('isecgetset',
-          'Defining and looking up getters and setters in Angular expressions is disallowed! '
-          +'Expression: {0}', fullExpression);
+          'Defining and looking up getters and setters in Angular expressions is disallowed! ' +
+          'Expression: {0}', fullExpression);
     }
   }
   return obj;
